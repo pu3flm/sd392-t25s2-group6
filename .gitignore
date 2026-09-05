@@ -1,0 +1,24 @@
+# Erlang build products and crash output
+ebin/
+*.beam
+erl_crash.dump
+
+# Runtime-generated state
+_demo_state/
+_live_state/
+live_vm/ebin/
+live_vm/state/
+
+# Temporary and generated working artifacts
+tmp/
+work/*.aux
+work/*.log
+work/*.out
+work/*.pdf
+work/pdf-build*/
+work/pdf-render*/
+work/test-ebin/
+
+# Editor and operating-system noise
+.DS_Store
+*~

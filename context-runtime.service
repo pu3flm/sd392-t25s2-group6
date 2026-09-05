@@ -1,0 +1,13 @@
+[Unit]
+Description=Fernando's local context runtime POC
+After=default.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/fern/Documents/Codex/2026-09-04/context-runtime-erlang-poc
+ExecStart=/usr/bin/erl -noshell -sname fern_context_runtime -pa /home/fern/Documents/Codex/2026-09-04/context-runtime-erlang-poc/ebin -eval 'application:load(context_runtime), application:set_env(context_runtime, storage_dir, "_live_state"), application:set_env(context_runtime, hot_budget, 64), {ok,_}=application:ensure_all_started(context_runtime), receive stop -> ok end.'
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

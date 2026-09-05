@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_dir="/home/fern/Documents/Codex/2026-09-04/context-runtime-erlang-poc"
+host_short="$(hostname -s)"
+node_name="fern_context_runtime@${host_short}"
+client_name="ctx_inspect_$$"
+
+printf '%s\n' '=== SYSTEMD SERVICE ==='
+systemctl --user --no-pager --full status context-runtime.service || true
+
+printf '\n%s\n' '=== LINUX PROCESS ==='
+main_pid="$(systemctl --user show context-runtime.service --property MainPID --value)"
+if [[ "$main_pid" =~ ^[1-9][0-9]*$ ]]; then
+  ps -p "$main_pid" -o pid,ppid,etimes,%cpu,%mem,stat,cmd
+else
+  printf 'No service PID found.\n'
+fi
+
+printf '\n%s\n' '=== RECENT SERVICE LOG ==='
+journalctl --user -u context-runtime.service -n 50 --no-pager
+
+printf '\n%s\n' '=== CONTEXT MANAGER STATE AND LIVE PROJECTIONS ==='
+erl -noshell -sname "$client_name" -pa "$repo_dir/ebin" -eval "
+Node = list_to_atom(\"$node_name\"),
+case rpc:call(Node, context_manager, status, []) of
+    Status when is_map(Status) ->
+        io:format(\"STATUS~n~p~n\", [Status]),
+        EventIds = maps:get(live_event_ids, Status, []),
+        lists:foreach(
+          fun(EventId) ->
+              Projection = rpc:call(Node, context_manager, projection, [EventId]),
+              io:format(\"~nPROJECTION ~p~n~p~n\", [EventId, Projection])
+          end, EventIds),
+        halt(0);
+    Error ->
+        io:format(standard_error, \"Context manager unavailable: ~p~n\", [Error]),
+        halt(1)
+end."

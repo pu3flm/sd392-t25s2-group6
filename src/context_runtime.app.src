@@ -1,0 +1,9 @@
+{application, context_runtime,
+ [{description, "Small falsifiable context-runtime experiment"},
+  {vsn, "0.1.0"},
+  {modules, [context_runtime_app, ctx_sup, context_manager, ctx_worker,
+             ctx_demo, ctx_tests]},
+  {registered, [ctx_sup, context_manager, ctx_worker_alpha,
+                ctx_worker_beta, ctx_worker_gamma]},
+  {applications, [kernel, stdlib]},
+  {mod, {context_runtime_app, []}}]}.
